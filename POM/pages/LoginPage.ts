@@ -35,8 +35,8 @@ export class LoginPage extends BasePage {
     }
 
     async errorAlertIsShowed(): Promise<boolean> {
-        let alert = getByLocator(this.page, loginPageLocators.errorAlert);
         try {
+            let alert = getByLocator(this.page, loginPageLocators.errorAlert);
             await expect(alert).toBeVisible({ timeout: 5000 }); // Espera hasta 5 segundos
             return true;
         } catch (error) {
