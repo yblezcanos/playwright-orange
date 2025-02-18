@@ -2,7 +2,8 @@ import { BasePage } from './BasePage';
 import { Page } from '@playwright/test';
 import { LocatorType, getByLocator } from "../../utils/locators";
 import { loginPageLocators } from "../locators/loginPage";
-import { get } from 'http';
+import { test, expect } from '@playwright/test';
+
 export class LoginPage extends BasePage {
     constructor(page) {
         super(page);
@@ -33,11 +34,18 @@ export class LoginPage extends BasePage {
         await this.clickLoginButton();
     }
 
-    async errorAlertIsShowed() : Promise<boolean> {
-        return await getByLocator(this.page, loginPageLocators.errorAlert).isVisible();
+    async errorAlertIsShowed(): Promise<boolean> {
+        let alert = getByLocator(this.page, loginPageLocators.errorAlert);
+        try {
+            await expect(alert).toBeVisible({ timeout: 5000 }); // Espera hasta 5 segundos
+            return true;
+        } catch (error) {
+            return false;
+        }
     }
 
     async errorAlert(): Promise<string | null> {
-        return await getByLocator(this.page, loginPageLocators.errorAlert).textContent();
+        let alert = getByLocator(this.page, loginPageLocators.errorAlert);
+        return await alert.textContent();
     }
 }
