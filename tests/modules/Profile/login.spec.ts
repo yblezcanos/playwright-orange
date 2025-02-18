@@ -19,14 +19,14 @@ test.describe('Login Tests', () => {
     test('should login with valid credentials', async ({ page }) => {
         await loginPage.login('Admin', 'admin123');
         await expect(page).toHaveURL('https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index');
-        await expect(loginPage.isNavbarTextVisible('Dashboard')).toBeTruthy();
+        let isTextVisible = await loginPage.isNavbarTextVisible('Dashboard');
+        expect(isTextVisible).toBeTruthy();
     });
 
     test('should show error with invalid credentials', async ({ page }) => {
         await loginPage.login('wrongUsername', 'wrongPassword');
-        //await expect(loginPage.errorAlert()).toContain('Invalid credentials');
-        await expect(loginPage.errorAlertIsShowed()).toBeTruthy();
-        //await expect(loginPage.errorAlert()).toHaveText('Invalid credentials');
+        let isAlertVisible = await loginPage.errorAlertIsShowed();
+        expect(isAlertVisible).toBeTruthy();
     });
 
     test('should require username and password', async ({ page }) => {
