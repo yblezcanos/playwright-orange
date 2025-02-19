@@ -33,8 +33,8 @@ export class BasePage {
    */
   async isNavbarTextVisible(text: string): Promise<boolean> {
     try {
-      const navbarPath = await this.navbar.locator(`text=${text}`);
-      await navbarPath.waitFor({ state: 'visible' });
+      const navbarPath = this.navbar.locator(`text="${text}"`);
+      await expect(navbarPath).toBeVisible({ timeout: 5000 });
       return true;
     } catch (error) {
       return false;

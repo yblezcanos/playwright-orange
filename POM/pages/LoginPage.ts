@@ -3,6 +3,7 @@ import { Page } from '@playwright/test';
 import { LocatorType, getByLocator } from "../../utils/locators";
 import { loginPageLocators } from "../locators/loginPage";
 import { test, expect } from '@playwright/test';
+import { get } from 'http';
 
 export class LoginPage extends BasePage {
     constructor(page) {
@@ -34,6 +35,16 @@ export class LoginPage extends BasePage {
         await this.clickLoginButton();
     }
 
+    async hasTitle(): Promise<boolean> {
+        try {
+            const title = getByLocator(this.page, loginPageLocators.title as LocatorType);
+            await title.waitFor({ state: 'visible' });
+            return true;
+          } catch (error) {
+            return false;
+          }
+    }
+
     async errorAlertIsShowed(): Promise<boolean> {
         try {
             let alert = getByLocator(this.page, loginPageLocators.errorAlert);
@@ -47,5 +58,15 @@ export class LoginPage extends BasePage {
     async errorAlert(): Promise<string | null> {
         let alert = getByLocator(this.page, loginPageLocators.errorAlert);
         return await alert.textContent();
+    }
+
+    async usernameValidationMessage(): Promise<string | null> {
+        let validationMessage = getByLocator(this.page, loginPageLocators.usernameValidationMessage);
+        return await validationMessage.textContent();
+    }
+
+    async passwordValidationMessage(): Promise<string | null> {
+        let validationMessage = getByLocator(this.page, loginPageLocators.passwordValidationMessage);
+        return await validationMessage.textContent();
     }
 }
