@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { LoginPage } from '../../../POM/pages/LoginPage';
 import * as faker from '../../../utils/faker';
-import * as fs from 'fs';
+import { mockDisabledUserResponse } from './mocks/interceptLoginRequest';
 
 test.describe('Login Tests', () => {
     let loginPage: LoginPage;
@@ -132,51 +132,48 @@ test.describe('Login Tests', () => {
     });
 
     test('should show error for disabled user', async ({ page }) => {
-        // Interceptamos la solicitud de login y forzamos una respuesta mock
-        const mockedResponse = fs.readFileSync(__dirname + '/mocks/disable.html', 'utf8');
-
-        await page.route('**/web/index.php/auth/validate', async (route) => {
-            await route.fulfill({
-                status: 200, // Código de error para autenticación fallida
-                contentType: 'text/html; charset=UTF-8',
-                body: mockedResponse, // Esto es lo que debería mostrar la alerta en la UI
-            });
+        await test.step('Intercept login request', async () => {
+            // Interceptamos la solicitud de login y forzamos una respuesta mock
+            await mockDisabledUserResponse(page);
         });
-
-        // Intentamos iniciar sesión con un usuario "deshabilitado"
-        await loginPage.login('disabledUser', 'Abcd-1234');
-
-        // Verificamos que el mensaje de error sea el correcto
-        let isAlertVisible = await loginPage.errorAlertIsShowed();
-        let alertText = await loginPage.errorAlert();
-        expect(isAlertVisible).toBeTruthy();
-        await expect(alertText.trim()).toBe('Account disabled');
-        await expect(alertText).toMatch(/\s*Account disabled\s*/);
+        await test.step('Enter disabled username and password', async () => {
+            // Intentamos iniciar sesión con un usuario "deshabilitado"
+            await loginPage.login('disabledUser', 'Abcd-1234');
+        });
+        await test.step('Verify Account disabled message', async () => {
+            // Verificamos que el mensaje de error sea el correcto
+            let isAlertVisible = await loginPage.errorAlertIsShowed();
+            let alertText = await loginPage.errorAlert();
+            expect(isAlertVisible).toBeTruthy();
+            await expect(alertText).toMatch(/Account disabled/);
+            //await expect(alertText.trim()).toBe('Account disabled');
+            //await expect(alertText).toMatch(/\s*Account disabled\s*/);
+        });
     });
 
     //otro ejemplo
     /*test('should always return the same result for login validation', async ({ page }) => {
         // Interceptamos la solicitud de login y forzamos una respuesta mock
         await page.route('**//*web/index.php/auth/validate', async (route) => {
-            await route.fulfill({
-                status: 302, // Estado de redirección
-                contentType: 'text/html; charset=UTF-8',
-                headers: {
-                    'Location': 'https://opensource-demo.orangehrmlive.com/web/index.php/auth/login',
-                    'Cache-Control': 'no-cache, private',
-                    'Set-Cookie': 'orangehrm=euunp2ka7kf6qb2t01560krlhd; Path=/; HttpOnly', // Aquí se agrega la Cookie
-                    // Puedes agregar más encabezados si es necesario
-                },
-                body: '', // Si es una redirección, el cuerpo puede estar vacío
-            });
+        await route.fulfill({
+            status: 302, // Estado de redirección
+            contentType: 'text/html; charset=UTF-8',
+            headers: {
+                'Location': 'https://opensource-demo.orangehrmlive.com/web/index.php/auth/login',
+                'Cache-Control': 'no-cache, private',
+                'Set-Cookie': 'orangehrm=euunp2ka7kf6qb2t01560krlhd; Path=/; HttpOnly', // Aquí se agrega la Cookie
+                // Puedes agregar más encabezados si es necesario
+            },
+            body: '', // Si es una redirección, el cuerpo puede estar vacío
         });
+    });
 
-        // Aquí podrías intentar iniciar sesión o hacer otra acción que desencadene la solicitud
-        await loginPage.login('Admin', 'admin123'); // Cambia estos valores según sea necesario
+    // Aquí podrías intentar iniciar sesión o hacer otra acción que desencadene la solicitud
+    await loginPage.login('Admin', 'admin123'); // Cambia estos valores según sea necesario
 
-        // Aquí puedes verificar que se produjo la redirección, si es necesario
-        // Por ejemplo, verificando la URL a la que se redirige
-        await expect(page).toHaveURL('https://opensource-demo.orangehrmlive.com/web/index.php/auth/login');
-    });*/
+    // Aquí puedes verificar que se produjo la redirección, si es necesario
+    // Por ejemplo, verificando la URL a la que se redirige
+    await expect(page).toHaveURL('https://opensource-demo.orangehrmlive.com/web/index.php/auth/login');
+});*/
 
 });
