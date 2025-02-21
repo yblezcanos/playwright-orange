@@ -55,9 +55,12 @@ export class LoginPage extends BasePage {
         }
     }
 
-    async errorAlert(): Promise<string | null> {
-        let alert = getByLocator(this.page, loginPageLocators.errorAlert);
-        return await alert.textContent();
+    async errorAlert(): Promise<string> {
+        if (await this.errorAlertIsShowed()) {
+            let alert = getByLocator(this.page, loginPageLocators.errorAlert);
+            return (await alert.textContent()) ?? '';
+        }
+        return ''; // Si el mensaje no aparece, devuelve ""
     }
 
     async usernameValidationMessage(): Promise<string | null> {
