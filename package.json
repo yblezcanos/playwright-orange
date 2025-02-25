@@ -4,7 +4,9 @@
   "description": "This project uses Playwright for end-to-end testing.",
   "main": "index.js",
   "scripts": {
-    "setup": "npx playwright test tests/common/saveLoginState.spec.ts"
+    "setup": "npx playwright test tests/common/auth.setup.ts",
+    "test": "npm run setup && npx playwright test",
+    "test:ui": "npm run setup && npx playwright test --ui"
   },
   "keywords": [],
   "author": "",
