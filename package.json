@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "description": "This project uses Playwright for end-to-end testing.",
   "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "setup": "npx playwright test tests/common/saveLoginState.spec.ts"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",

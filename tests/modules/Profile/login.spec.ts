@@ -3,6 +3,8 @@ import { LoginPage } from '../../../POM/pages/LoginPage';
 import * as faker from '../../../utils/faker';
 import { mockDisabledUserResponse } from './mocks/interceptLoginRequest';
 
+test.use({storageState: {cookies:[], origins:[]}})//no utilizar el storageState que almacena las cookie de la sesion
+
 test.describe('Login Tests', () => {
     let loginPage: LoginPage;
 
