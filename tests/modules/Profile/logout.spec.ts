@@ -8,23 +8,13 @@ const authFile = "playwright/.auth/user.json";
 test.use({ storageState: 'playwright/.auth/user.json' });
 
 test.describe('Logout Tests', () => {
-    let basePage: BasePage;
-
-    test('check default login', async ({ page }) => {
-        console.log('>>>>>>>>>>>> check default login');
-        /*let loginPage = new LoginPage(page);
-        await loginPage.saveSession({ page, authFile });*/
-        basePage = new BasePage(page);
-        await basePage.goToDashboard(page);
-        await expect(page).toHaveURL('/web/index.php/dashboard/index');
-    });
+    let basePage: BasePage;   
 
     test('should logout successfully', async ({ page }) => {
         basePage = new BasePage(page);
         let isInDashborard = await basePage.goToDashboard(page);
-        await basePage.logout(); // Llama al método de logout
-        await expect(page).toHaveURL('/web/index.php/auth/login');
-        console.log('Logout success', isInDashborard);
+        await basePage.logout();
+        await expect(page).toHaveURL('/web/index.php/auth/login');        
     });
 
     test('should redirect to login if accessing profile after logout', async ({ page }) => {

@@ -45,10 +45,10 @@ export class BasePage {
     }
   }
 
-
   async openProfileMenu(): Promise<void> {
     await this.profileDropdown.click(); // Hace clic en el menú del usuario para desplegar las opciones
   }
+
   /**
    * Logs out the user by clicking the logout button in the navbar
    * and waits for the login page to be visible.
