@@ -3,11 +3,14 @@ import { Page } from '@playwright/test';
 import { LocatorType, getByLocator } from "../../utils/locators";
 import { loginPageLocators } from "../locators/loginPage";
 import { test, expect } from '@playwright/test';
-import { get } from 'http';
 
 export class LoginPage extends BasePage {
+
+    baseUrl: string;
+
     constructor(page) {
         super(page);
+        this.baseUrl = "/web/index.php/auth/login";
     }
 
     async navigateToLogin() {
@@ -40,9 +43,9 @@ export class LoginPage extends BasePage {
             const title = getByLocator(this.page, loginPageLocators.title as LocatorType);
             await title.waitFor({ state: 'visible' });
             return true;
-          } catch (error) {
+        } catch (error) {
             return false;
-          }
+        }
     }
 
     async errorAlertIsShowed(): Promise<boolean> {
@@ -71,5 +74,22 @@ export class LoginPage extends BasePage {
     async passwordValidationMessage(): Promise<string | null> {
         let validationMessage = getByLocator(this.page, loginPageLocators.passwordValidationMessage);
         return await validationMessage.textContent();
+    }
+
+    async saveSession({
+        page,
+        username = process.env.ADMIN_USERNAME || 'fallbackUser',
+        password = process.env.ADMIN_PASSWORD || 'fallbackPass',
+        authFile
+    }: { page: Page, username?: string, password?: string, authFile: string }) {
+        await page.goto(this.baseUrl);
+        await this.login(username, password);
+        await expect(page).toHaveURL('/web/index.php/dashboard/index');
+        let isTextVisible = await this.isNavbarTextVisible('Dashboard');//Dashboard
+        expect(isTextVisible).toBeTruthy();
+
+        //almacenar el estado de la sesion(es como una cookie)
+        await page.context().storageState({ path: authFile });
+        await page.waitForURL('/web/index.php/dashboard/index');
     }
 }

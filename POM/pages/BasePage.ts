@@ -11,11 +11,15 @@ export class BasePage {
   readonly page: Page;
   readonly navbar: Locator;
   readonly sidebar: Locator;
+  readonly logoutButton: Locator;
+  readonly profileDropdown: Locator;
 
   constructor(page: Page) {
     this.page = page;
     this.navbar = getByLocator(page, basePageLocators.navbar);
     this.sidebar = getByLocator(page, basePageLocators.sidebar as LocatorType);
+    this.logoutButton = getByLocator(page, basePageLocators.logoutButton as LocatorType);
+    this.profileDropdown = getByLocator(page, basePageLocators.profileDropdown as LocatorType);
   }
 
   async goto(url: string) {
@@ -38,6 +42,45 @@ export class BasePage {
       return true;
     } catch (error) {
       return false;
+    }
+  }
+
+
+  async openProfileMenu(): Promise<void> {
+    await this.profileDropdown.click(); // Hace clic en el menú del usuario para desplegar las opciones
+  }
+  /**
+   * Logs out the user by clicking the logout button in the navbar
+   * and waits for the login page to be visible.
+   */
+  async logout(): Promise<void> {
+    const logoutButton = this.logoutButton;
+    await this.openProfileMenu();
+    await logoutButton.click();
+    await this.page.waitForURL('/web/index.php/auth/login');
+  }
+
+  /**
+   * Checks if the logout button is visible on the page.
+   * @param {Page} page 
+   * @returns {Promise<boolean>}
+   */
+  async isLogoutButtonVisible(page: Page, timeout = 5000): Promise<boolean> {
+    try {
+      await expect(this.logoutButton).toBeVisible({ timeout });
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  async goToDashboard(page): Promise<boolean> {
+    if (!(await this.isLogoutButtonVisible(page, 1000))) {
+      // Si no estás en una página con el botón de logout, navega al dashboard
+      await page.goto('/web/index.php/dashboard/index');
+      return await this.isLogoutButtonVisible(page);
+    } else {
+      return true;
     }
   }
 
