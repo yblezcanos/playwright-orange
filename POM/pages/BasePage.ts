@@ -1,6 +1,8 @@
 import { Page, Locator, expect } from "@playwright/test";
 import { LocatorType, getByLocator } from "../../utils/locators";
 import { basePageLocators } from "../locators/basePage";
+import { th } from "@faker-js/faker";
+import exp from "constants";
 
 export interface PageChangeOption {
   path?: string | RegExp;
@@ -13,6 +15,14 @@ export class BasePage {
   readonly sidebar: Locator;
   readonly logoutButton: Locator;
   readonly profileDropdown: Locator;
+  readonly aboutButton: Locator;
+  readonly popup: Locator;
+  readonly popupTitle: Locator;
+  readonly popupCompanyName: Locator;
+  readonly popupVersion: Locator;
+  readonly popupActiveEmployees: Locator;
+  readonly popupEmployeesTerminated: Locator;
+  readonly closePopupButton: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -20,6 +30,14 @@ export class BasePage {
     this.sidebar = getByLocator(page, basePageLocators.sidebar as LocatorType);
     this.logoutButton = getByLocator(page, basePageLocators.logoutButton as LocatorType);
     this.profileDropdown = getByLocator(page, basePageLocators.profileDropdown as LocatorType);
+    this.aboutButton = getByLocator(page, basePageLocators.aboutButton as LocatorType);
+    this.popup = getByLocator(page, basePageLocators.popup);
+    this.popupTitle = getByLocator(page, basePageLocators.popupTitle as LocatorType);
+    this.popupCompanyName = getByLocator(page, basePageLocators.popupCompanyName);
+    this.popupVersion = getByLocator(page, basePageLocators.popupVersion);
+    this.popupActiveEmployees = getByLocator(page, basePageLocators.popupActiveEmployees);
+    this.popupEmployeesTerminated = getByLocator(page, basePageLocators.popupEmployeesTerminated)
+    this.closePopupButton = getByLocator(page, basePageLocators.closePopupButton);
   }
 
   async goto(url: string) {
@@ -82,6 +100,41 @@ export class BasePage {
     } else {
       return true;
     }
+  }
+
+  async about(): Promise<void> {
+    const aboutButton = this.aboutButton;
+    await this.openProfileMenu();
+    await aboutButton.click();
+    await expect(this.popup).toBeVisible();
+  }
+
+  async checkAboutPopupInformation(): Promise<boolean> {
+    const popupTitle = this.popupTitle;
+    const popupCompanyName = this.popupCompanyName;
+    const popupVersion = this.popupVersion;
+    const popupActiveEmployees = this.popupActiveEmployees;
+    const popupEmployeesTerminated = this.popupEmployeesTerminated;
+
+    try {
+      await expect(popupTitle).toHaveText('About');
+      await expect(popupCompanyName).toBeVisible();
+      await expect(popupVersion).toBeVisible();
+      await expect(popupActiveEmployees).toBeVisible();
+      await expect(popupEmployeesTerminated).toBeVisible();
+      return true;
+    }
+    catch (error) {
+      return false;
+    }
+  }
+
+  async closePopup(): Promise<void> {
+    let popup = this.popup;
+    let closePopupButton = this.closePopupButton;
+    await expect(popup).toBeVisible();
+    await closePopupButton.click();
+    await expect(popup).not.toBeVisible(); 
   }
 
   /**

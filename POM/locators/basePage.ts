@@ -7,4 +7,12 @@ export const basePageLocators = {
 
     profileDropdown: '.oxd-topbar-header-userarea',
     logoutButton: ['menuitem', { name: 'Logout' }],
+    aboutButton: ['menuitem', { name: 'About' }],
+    popup: '.oxd-dialog-sheet',
+    popupTitle: ['heading', { name: 'About' }],
+    popupCompanyName: { text: 'Company Name: ' },
+    popupVersion: { text: 'Version: ' },
+    popupActiveEmployees: { text: 'Active Employees: ' },
+    popupEmployeesTerminated: { text: 'Employees Terminated: ' },
+    closePopupButton: '.oxd-dialog-close-button'
 };
