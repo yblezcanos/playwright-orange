@@ -3,12 +3,18 @@
   "version": "1.0.0",
   "description": "This project uses Playwright for end-to-end testing.",
   "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "setup": "npx playwright test tests/common/auth.setup.ts",
+    "test": "npm run setup && npx playwright test",
+    "test:ui": "npm run setup && npx playwright test --ui"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@faker-js/faker": "^9.5.0",
     "@playwright/test": "^1.50.1",
-    "@types/node": "^22.13.4"
+    "@types/node": "^22.13.4",
+    "dotenv": "^16.4.7"
   }
 }
