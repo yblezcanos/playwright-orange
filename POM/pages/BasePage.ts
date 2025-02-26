@@ -23,6 +23,15 @@ export class BasePage {
   readonly popupActiveEmployees: Locator;
   readonly popupEmployeesTerminated: Locator;
   readonly closePopupButton: Locator;
+  readonly changePasswordButton: Locator;
+  readonly changePasswordUrl: string;
+  //readonly PIMPath: Locator;
+  readonly containerChangePassword: Locator;
+  readonly currentPassword: Locator;
+  readonly newPassword: Locator;
+  readonly confirmPassword: Locator;
+  readonly changePasswordSaveButton: Locator;
+  readonly changePasswordCancelButton: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -38,6 +47,14 @@ export class BasePage {
     this.popupActiveEmployees = getByLocator(page, basePageLocators.popupActiveEmployees);
     this.popupEmployeesTerminated = getByLocator(page, basePageLocators.popupEmployeesTerminated)
     this.closePopupButton = getByLocator(page, basePageLocators.closePopupButton);
+    this.changePasswordButton = getByLocator(page, basePageLocators.changePasswordButton as LocatorType);
+    //this.PIMPath = getByLocator(page, basePageLocators.PIMPath as LocatorType);
+    this.containerChangePassword = getByLocator(page, basePageLocators.containerChangePassword);
+    this.currentPassword = getByLocator(page, basePageLocators.currentPassword);
+    this.newPassword = getByLocator(page, basePageLocators.newPassword);
+    this.confirmPassword = getByLocator(page, basePageLocators.confirmPassword);
+    this.changePasswordSaveButton = getByLocator(page, basePageLocators.changePasswordSaveButton as LocatorType);
+    this.changePasswordCancelButton = getByLocator(page, basePageLocators.changePasswordCancelButton as LocatorType);
   }
 
   async goto(url: string) {
@@ -135,6 +152,43 @@ export class BasePage {
     await expect(popup).toBeVisible();
     await closePopupButton.click();
     await expect(popup).not.toBeVisible(); 
+  }
+
+  async accessChangePassword(): Promise<void> {
+    const changePasswordButton = this.changePasswordButton;
+    await this.openProfileMenu();
+    await changePasswordButton.click();    
+  }
+
+  async isContainerChangePasswordTitleVisible(): Promise<boolean> {
+    try {
+      await expect(this.containerChangePassword).toBeVisible();
+      return true;
+    } catch (error) {
+      return false; 
+    }
+  }
+
+  async isTitleChangePasswordOK(): Promise<boolean> {
+    try {
+      const title = await this.containerChangePassword.textContent();
+      await expect(title).toBe('Update Password');
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  async changePassword(oldPassword: string, newPassword: string): Promise<void> {
+    const currentPasswordInput = this.currentPassword;
+    const newPasswordInput = this.newPassword;
+    const confirmPasswordInput = this.confirmPassword;
+    const saveButton = this.changePasswordSaveButton;
+
+    await currentPasswordInput.fill(oldPassword);
+    await newPasswordInput.fill(newPassword);
+    await confirmPasswordInput.fill(newPassword);
+    await saveButton.click();             
   }
 
   /**
