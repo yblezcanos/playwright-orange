@@ -2,9 +2,9 @@ import { test, expect } from '@playwright/test';
 import { BasePage } from '../../../POM/pages/BasePage';
 import { LoginPage } from '../../../POM/pages/LoginPage';
 
-test.use({ storageState: 'playwright/.auth/user_logout.json' });
+test.use({ storageState: 'playwright/.auth/user.json' });
 
-/*test.describe('Logout Tests', () => {
+test.describe('Logout Tests', () => {
     let basePage: BasePage;  
     let loginPage: LoginPage; 
 
@@ -18,4 +18,4 @@ test.use({ storageState: 'playwright/.auth/user_logout.json' });
         await basePage.goto('/web/index.php/dashboard/index');
         await expect(page).toHaveURL('/web/index.php/auth/login');     
     });   
-}); */
+}); 
