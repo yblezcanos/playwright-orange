@@ -80,8 +80,9 @@ export class LoginPage extends BasePage {
         page,
         username = process.env.ADMIN_USERNAME || 'fallbackUser',
         password = process.env.ADMIN_PASSWORD || 'fallbackPass',
-        authFile
-    }: { page: Page, username?: string, password?: string, authFile: string }) {
+        authFile,
+        logoutFile
+    }: { page: Page, username?: string, password?: string, authFile: string, logoutFile: string }) {
         await page.goto(this.baseUrl);
         await this.login(username, password);
         await expect(page).toHaveURL('/web/index.php/dashboard/index');
@@ -90,6 +91,6 @@ export class LoginPage extends BasePage {
 
         //almacenar el estado de la sesion(es como una cookie)
         await page.context().storageState({ path: authFile });
-        await page.waitForURL('/web/index.php/dashboard/index');
+        await page.context().storageState({ path: logoutFile });
     }
 }

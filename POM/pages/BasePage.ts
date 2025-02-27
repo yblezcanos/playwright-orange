@@ -32,6 +32,7 @@ export class BasePage {
   readonly confirmPassword: Locator;
   readonly changePasswordSaveButton: Locator;
   readonly changePasswordCancelButton: Locator;
+  readonly spinner: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -55,6 +56,7 @@ export class BasePage {
     this.confirmPassword = getByLocator(page, basePageLocators.confirmPassword);
     this.changePasswordSaveButton = getByLocator(page, basePageLocators.changePasswordSaveButton as LocatorType);
     this.changePasswordCancelButton = getByLocator(page, basePageLocators.changePasswordCancelButton as LocatorType);
+    this.spinner = getByLocator(page, basePageLocators.spinner);
   }
 
   async goto(url: string) {
@@ -84,6 +86,17 @@ export class BasePage {
     await this.profileDropdown.click(); // Hace clic en el menú del usuario para desplegar las opciones
   }
 
+  async goToDashboard(page: Page, locator: Locator): Promise<boolean> {
+    if (!(await locator.isVisible())) {
+        // Si no estás en una página con el botón de logout u otra opción del menú de perfil, navega al dashboard
+        await page.goto('/web/index.php/dashboard/index');
+
+        // Espera a que el locator esté visible con un timeout
+        await locator.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
+    }
+    return await locator.isVisible();
+}
+
   /**
    * Logs out the user by clicking the logout button in the navbar
    * and waits for the login page to be visible.
@@ -100,24 +113,14 @@ export class BasePage {
    * @param {Page} page 
    * @returns {Promise<boolean>}
    */
-  async isLogoutButtonVisible(page: Page, timeout = 5000): Promise<boolean> {
+  async isLogoutButtonVisible(page: Page): Promise<boolean> {
     try {
-      await expect(this.logoutButton).toBeVisible({ timeout });
+      await expect(this.logoutButton).toBeVisible();
       return true;
     } catch (error) {
       return false;
     }
-  }
-
-  async goToDashboard(page): Promise<boolean> {
-    if (!(await this.isLogoutButtonVisible(page, 1000))) {
-      // Si no estás en una página con el botón de logout, navega al dashboard
-      await page.goto('/web/index.php/dashboard/index');
-      return await this.isLogoutButtonVisible(page);
-    } else {
-      return true;
-    }
-  }
+  }   
 
   async about(): Promise<void> {
     const aboutButton = this.aboutButton;
@@ -179,16 +182,28 @@ export class BasePage {
     }
   }
 
+  async isChangePasswordVisible(page: Page): Promise<boolean> {
+    try {
+      await expect(this.changePasswordButton).toBeVisible();
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
   async changePassword(oldPassword: string, newPassword: string): Promise<void> {
     const currentPasswordInput = this.currentPassword;
     const newPasswordInput = this.newPassword;
     const confirmPasswordInput = this.confirmPassword;
     const saveButton = this.changePasswordSaveButton;
+    const spinner = this.spinner;
 
-    await currentPasswordInput.fill(oldPassword);
-    await newPasswordInput.fill(newPassword);
-    await confirmPasswordInput.fill(newPassword);
-    await saveButton.click();             
+    await currentPasswordInput.nth(0).fill(oldPassword);
+    await newPasswordInput.nth(1).fill(newPassword);
+    await confirmPasswordInput.last().fill(newPassword);
+    await saveButton.click();
+    await spinner.waitFor({ state: 'hidden' });
+                 
   }
 
   /**

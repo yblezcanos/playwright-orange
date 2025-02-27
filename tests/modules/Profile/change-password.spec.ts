@@ -3,6 +3,7 @@ import { BasePage } from '../../../POM/pages/BasePage';
 import { LoginPage } from '../../../POM/pages/LoginPage';
 import exp from 'constants';
 
+test.use({ storageState: 'playwright/.auth/user.json' });
 test.describe('Change Password', () => {
     let basePage: BasePage;
     let loginPage: LoginPage;
@@ -13,7 +14,7 @@ test.describe('Change Password', () => {
     });
 
     test('should change password successfully', async ({ page }) => {
-        await basePage.goToDashboard(page);
+        await basePage.goToDashboard(page, basePage.changePasswordButton);
         await basePage.accessChangePassword();
         await expect(page).toHaveURL('/web/index.php/pim/updatePassword');
         let isTextVisible = await loginPage.isNavbarTextVisible('PIM');
@@ -22,6 +23,7 @@ test.describe('Change Password', () => {
         expect(isContainerChangePasswordTitleVisible).toBeTruthy();
         let isTitleChangePasswordOK = await basePage.isTitleChangePasswordOK();
         expect(await isTitleChangePasswordOK).toBeTruthy();
+        await basePage.changePassword('Admin', 'KevinNatalie-1');
 
         //await profilePage.changePassword('oldPassword', 'newPassword');
         //await profilePage.logout();
