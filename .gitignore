@@ -1,7 +1,7 @@
 
 # Playwright
 node_modules/
-**/.auth/*
+# **/.auth/*
 reports/
 /test-results/
 /playwright-report/
