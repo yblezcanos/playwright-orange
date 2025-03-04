@@ -11,6 +11,12 @@ export type LocatorType =
   | { testId: string }  // getByTestId
   | [role: Parameters<Page['getByRole']>[0], options?: Parameters<Page['getByRole']>[1]]; // getByRole
 
+  /**
+   * Get the component by locatorType
+   * @param {Page} page 
+   * @param {LocatorType} locator 
+   * @returns {locator} Located Component
+   */
 export function getByLocator(page: Page, locator: LocatorType): Locator {
   if (typeof locator === "string") {
     return page.locator(locator);  // Manejo de CSS/XPath
