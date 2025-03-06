@@ -2,7 +2,7 @@ import { expect, Page, Locator } from '@playwright/test';
 import { BasePage } from './BasePage';
 import { LocatorType, getByLocator } from "../../utils/locators";
 import { changePasswordLocators } from "../locators/changePassword";
-
+import passCfg from "../../tests/common/pass.cfg.json"; 
 
 export class ChangePasswordPage extends BasePage {
   readonly containerChangePassword: Locator;
@@ -30,8 +30,13 @@ export class ChangePasswordPage extends BasePage {
     this.alertMessage = getByLocator(page, changePasswordLocators.alertMessage);
   }
 
-  async enterNewPassword(newPassword: string) {
-    await this.newPassword.fill(newPassword);
+  async enterNewPassword(newPassword: string, cmp?: Locator | LocatorType) {
+    if (!cmp) {
+      cmp = this.newPassword;
+    } else if (!this.isLocator(cmp)) {
+      cmp = getByLocator(this.page, cmp as LocatorType);
+    }
+    await cmp.fill(newPassword);
   }
 
   async confirmNewPassword(confirmPassword: string) {
@@ -46,7 +51,7 @@ export class ChangePasswordPage extends BasePage {
     const spinner = this.spinner;
 
     await currentPasswordInput.nth(0).fill(oldPassword);
-    await newPasswordInput.nth(1).fill(newPassword);
+    await newPasswordInput.fill(newPassword);
     await confirmPasswordInput.last().fill(newPassword);
     await saveButton.click();
     await spinner.waitFor({ state: 'hidden' });
@@ -55,7 +60,7 @@ export class ChangePasswordPage extends BasePage {
   async expectErrorMessage(errorText: string) {
     const errorMessage = this.errorMessage;
     const errorLocator = errorMessage.locator('text=' + errorText);
-    await expect(errorLocator).toBeVisible({ timeout: 5000 });
+    await expect(errorLocator).toBeVisible();
   }
 
   async isContainerChangePasswordTitleVisible(): Promise<boolean> {
@@ -77,64 +82,112 @@ export class ChangePasswordPage extends BasePage {
     }
   }
 
-  async validatePassword(cmp: Locator | LocatorType, newPass: string): Promise<boolean> {
-    if (!this.isLocator(cmp)) {
-      cmp = getByLocator(this.page, cmp as LocatorType);
+
+  async validatePasswordCfg(input?: Locator | LocatorType, alertMessage?: Locator | LocatorType) {
+    if (!this.isLocator(input)) {
+      input = getByLocator(this.page, input as LocatorType);
+    }
+
+    if (!alertMessage) {
+      alertMessage = this.alertMessage;
+    } if (!this.isLocator(alertMessage)) {
+      alertMessage = getByLocator(this.page, alertMessage as LocatorType);
+    }
+
+    const invalidPasswords = [
+      { pass: '123', message: 'Should have at least 7 characters' }, // Less than 7 characters
+      { pass: 'abc', message: 'Should have at least 7 characters' }, // Less than 7 characters
+
+      { pass: 'A'.repeat(65), message: 'Should not exceed 64 characters' }, // More than 64 characters
+      { pass: 'abcdefg', message: 'Your password must contain minimum 1 number' }, // No numbers
+      { pass: '1234567', message: 'Your password must contain minimum 1 lower-case letter' } // No lowercase letters
+    ];
+
+    for (const { pass, message } of invalidPasswords) {
+      await this.enterNewPassword(pass, input);
+      await expect(alertMessage).toHaveText(message); // this.alertMessage
+    }
+  }
+
+  async validatePassword(input?: Locator | LocatorType, alertMessage?: Locator | LocatorType): Promise<boolean> {
+    if (!this.isLocator(input)) {
+      input = getByLocator(this.page, input as LocatorType);
+    }
+
+    if (!alertMessage) {
+      alertMessage = this.alertMessage;
+    } if (!this.isLocator(alertMessage)) {
+      alertMessage = getByLocator(this.page, alertMessage as LocatorType);
     }
 
     let results = await Promise.all([
-      this.validateMinLen(cmp, newPass),
-      this.validateMaxLen(cmp, newPass),
-      this.validateNumber(cmp, newPass),
-      this.validateLowerCase(cmp, newPass)
+      this.validateMinLen(input, alertMessage),
+      this.validateMaxLen(input, alertMessage),
+      this.validateNumber(input, alertMessage),
+      this.validateLowerCase(input, alertMessage)
     ]);
 
-    return results.every(result => result);
-
-    /*
-    return await this.validateMinLen(cmp, newPass) &&
-      await this.validateMaxLen(cmp, newPass) &&
-      await this.validateNumber(cmp, newPass) &&
-      await this.validateLowerCase(cmp, newPass);
-      */
+    return results.every(result => result);   
   }
 
-  async validateMinLen(cmp: Locator, newPass: string): Promise<boolean> {
-    await this.enterNewPassword(newPass);
+  async validateMinLen(cmp: Locator, alertMessage: Locator): Promise<boolean> {
+    let message = passCfg.minLen.msg;
+    let passwords = passCfg.minLen.chart;
+
+    for (let pass of passwords) {
+      await this.enterNewPassword(pass, cmp);
+      const text = await cmp.textContent()
+      const altMessage = await alertMessage.textContent();
+      if (altMessage !== message || text !== pass) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+
+
+  async validateMaxLen(cmp: Locator, alertMessage: Locator): Promise<boolean> {
+    let pass = passCfg.maxLen.chart.repeat(65);
+    await this.enterNewPassword(pass, cmp);
     const text = await cmp.textContent() ?? "";
-    const alertMessage = await this.alertMessage.textContent();
+    const message = await alertMessage.textContent() ?? "";
     return text !== null &&
-    text.length >= 7 &&
-    alertMessage === 'Should have at least 7 characters';     
+      text.length <= passCfg.maxLen.max &&
+      message === passCfg.maxLen.msg;
   }
 
-  async validateMaxLen(cmp: Locator, newPass: string): Promise<boolean> {
-    await this.enterNewPassword(newPass);
-    const text = await cmp.textContent() ?? "";
-    const alertMessage = await this.alertMessage.textContent();
-    return text !== null && 
-    text.length <= 64 && 
-    alertMessage === 'Should not exceed 64 characters';   
-  }
+  async validateNumber(cmp: Locator, alertMessage: Locator): Promise<boolean> {
+    let message = passCfg.number.msg;
+    let passwords = passCfg.number.chart;
+    for (let pass of passwords) {
+      await this.enterNewPassword(pass, cmp);
+      const text = await cmp.textContent() ?? "";
+      const altMessage = await alertMessage.textContent() ?? "";
+      if (text == null && altMessage !== message &&  !/\d/.test(text)) {
+        return false;
+      }
+    }
 
-  async validateNumber(cmp: Locator, newPass: string): Promise<boolean> {
-    await this.enterNewPassword(newPass);
-    const text = await cmp.textContent() ?? "";
-    const alertMessage = await this.alertMessage.textContent() ?? "";
-    return text !== null &&
-    /\d/.test(text) && 
-    alertMessage === 'Your password must contain minimum 1 number';     
-  }
+    return true;
+  }    
 
-  async validateLowerCase(cmp: Locator, newPass: string): Promise<boolean> {
-    await this.enterNewPassword(newPass);
-    const text = await cmp.textContent() ?? "";
-    const alertMessage = await this.alertMessage.textContent() ?? "";
-    return text !== null &&
-    /[a-z]/.test(text) && 
-    alertMessage === 'Your password must contain minimum 1 lower-case letter';         
-  }
+  async validateLowerCase(cmp: Locator, alertMessage: Locator): Promise<boolean> {
+    let message = passCfg.lowerCase.msg;
+    let passwords = passCfg.lowerCase.chart;
+    for (let pass of passwords) {
+      await this.enterNewPassword(pass, cmp);
+      const text = await cmp.textContent() ?? "";
+      const altMessage = await alertMessage.textContent() ?? "";
+      if (text == null && altMessage !== message &&  !/[a-z]/.test(text)) {
+        return false;
+      }
+    }
 
+    return true;
+  }    
+   
   isLocator(obj: any): obj is Locator {
     return obj && typeof obj === 'object' && typeof obj.click === 'function' && typeof obj.isVisible === 'function';
   }

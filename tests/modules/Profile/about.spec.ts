@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { BasePage } from '../../../POM/pages/BasePage';
 
-test.use({ storageState: 'playwright/.auth/user.json' });
+test.use({ storageState: 'tmp/.auth/user.json' });
 
 test.describe('Profile About Section', () => {
     test('should open the about popup with correct information', async ({ page }) => {

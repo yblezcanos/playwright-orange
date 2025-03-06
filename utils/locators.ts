@@ -3,52 +3,67 @@ import { Locator, Page } from "@playwright/test";
 // Definir los tipos de localizadores admitidos
 export type LocatorType =
   | string  // XPath o CSS
-  | { text: string }  // getByText
-  | { label: string }  // getByLabel
-  | { placeholder: string }  // getByPlaceholder
-  | { altText: string }  // getByAltText
-  | { title: string }  // getByTitle
-  | { testId: string }  // getByTestId
+  | { css: string; nth?: number }  // getByText
+  | { text: string; nth?: number }  // getByText
+  | { label: string; nth?: number }  // getByLabel
+  | { placeholder: string; nth?: number }  // getByPlaceholder
+  | { altText: string; nth?: number }  // getByAltText
+  | { title: string; nth?: number }  // getByTitle
+  | { testId: string; nth?: number }  // getByTestId
   | [role: Parameters<Page['getByRole']>[0], options?: Parameters<Page['getByRole']>[1]]; // getByRole
 
-  /**
-   * Get the component by locatorType
-   * @param {Page} page 
-   * @param {LocatorType} locator 
-   * @returns {locator} Located Component
-   */
-export function getByLocator(page: Page, locator: LocatorType): Locator {
-  if (typeof locator === "string") {
-    return page.locator(locator);  // Manejo de CSS/XPath
+/**
+ * Get the component by locatorType
+ * @param {Page} page 
+ * @param {LocatorType} locator 
+ * @returns {locator} Located Component
+ */
+export function getByLocator(page: Page, config: LocatorType): Locator {
+  let cmp: Locator | null = null;
+
+  if (typeof config === "string") {
+    config = { "css": config };
   }
 
-  if (Array.isArray(locator)) {
-    return page.getByRole(locator[0], locator[1]);  // Manejo de getByRole
+  if (Array.isArray(config)) {
+    cmp = page.getByRole(config[0], config[1]);  // Manejo de getByRole
   }
 
-  if ("text" in locator) {
-    return page.getByText(locator.text);  // Manejo de getByText
+  if ("css" in config) {
+    cmp = page.locator(config.css);  // Manejo de CSS/XPath
   }
 
-  if ("label" in locator) {
-    return page.getByLabel(locator.label);  // Manejo de getByLabel
+  if ("text" in config) {
+    cmp = page.getByText(config.text);  // Manejo de getByText
   }
 
-  if ("placeholder" in locator) {
-    return page.getByPlaceholder(locator.placeholder);  // Manejo de getByPlaceholder
+  if ("label" in config) {
+    cmp = page.getByLabel(config.label);  // Manejo de getByLabel
   }
 
-  if ("altText" in locator) {
-    return page.getByAltText(locator.altText);  // Manejo de getByAltText
+  if ("placeholder" in config) {
+    cmp = page.getByPlaceholder(config.placeholder);  // Manejo de getByPlaceholder
   }
 
-  if ("title" in locator) {
-    return page.getByTitle(locator.title);  // Manejo de getByTitle
+  if ("altText" in config) {
+    cmp = page.getByAltText(config.altText);  // Manejo de getByAltText
   }
 
-  if ("testId" in locator) {
-    return page.getByTestId(locator.testId);  // Manejo de getByTestId
+  if ("title" in config) {
+    cmp = page.getByTitle(config.title);  // Manejo de getByTitle
   }
 
-  throw new Error("Invalid locator type");
+  if ("testId" in config) {
+    cmp = page.getByTestId(config.testId);  // Manejo de getByTestId
+  }
+
+  if (!cmp) {
+    throw new Error("Invalid locator type");
+  }
+
+  if ("nth" in config && config.nth !== undefined) {
+    cmp = cmp.nth(config.nth);
+  }
+
+  return cmp;
 }

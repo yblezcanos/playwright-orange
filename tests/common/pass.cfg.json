@@ -1,0 +1,23 @@
+{
+    "maxLen": {
+        "max": 64,
+        "msg": "Should not exceed 64 characters",
+        "chart": "A"
+    },
+
+    "minLen": {
+        "min":7,
+        "msg":"Should have at least 7 characters",
+        "chart":["123", "abc", "@"]
+    } ,
+
+    "number": {        
+        "msg":"Your password must contain minimum 1 number",
+        "chart": ["abcdefg", "AbCdEfG", "@abCD*¬"]        
+    },
+
+    "lowerCase": {
+        "msg":"Your password must contain minimum 1 lower-case letter",
+        "chart": ["1234567", "ABCDEFG", "@*¬#€(=?"]    
+    }
+}

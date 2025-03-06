@@ -1,7 +1,7 @@
 import { test as setup, expect } from "@playwright/test";
 import { LoginPage } from '../../POM/pages/LoginPage';
 
-const authFile = "playwright/.auth/user.json";
+const authFile = "tmp/.auth/user.json";
 //const logoutFile = "playwright/.auth/user_logout.json";
 let loginPage: LoginPage;
 

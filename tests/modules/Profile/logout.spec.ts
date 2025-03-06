@@ -1,7 +1,7 @@
 import { test, expect, chromium } from '@playwright/test';
 import { BasePage } from '../../../POM/pages/BasePage';
 import { LoginPage } from '../../../POM/pages/LoginPage';
-const authFile = 'playwright/.auth/tmp.logout.json';
+const authFile = 'tmp/.auth/logout.json';
 
 test.describe('Logout Tests', () => {
     let basePage: BasePage;
