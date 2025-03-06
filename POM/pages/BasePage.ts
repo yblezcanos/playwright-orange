@@ -43,10 +43,21 @@ export class BasePage {
     this.changePasswordButton = getByLocator(page, basePageLocators.changePasswordButton as LocatorType);    
   }
 
+  /**
+   * Navigates to the specified URL.
+   *
+   * @param {string} url - The URL to navigate to.
+   * @returns {Promise<void>} A promise that resolves when the navigation is complete.
+   */
   async goto(url: string) {
     await this.page.goto(url);
   }
 
+  /**
+   * Checks if the sidebar is visible on the page.
+   *
+   * @returns {Promise<boolean>} A promise that resolves to a boolean indicating whether the sidebar is visible.
+   */
   async isSidebarVisible(): Promise<boolean> {
     return await this.sidebar.isVisible();
   }
@@ -66,10 +77,22 @@ export class BasePage {
     }
   }
 
+  /**
+   * Opens the profile menu by clicking on the profile dropdown element.
+   * 
+   * @returns {Promise<void>} A promise that resolves when the profile menu is opened.
+   */
   async openProfileMenu(): Promise<void> {
     await this.profileDropdown.click(); // Hace clic en el menú del usuario para desplegar las opciones
   }
 
+  /**
+   * Navigates to the dashboard page if the specified locator is not visible.
+   * 
+   * @param page - The Playwright Page object representing the browser page.
+   * @param locator - The Playwright Locator object to check for visibility.
+   * @returns A promise that resolves to a boolean indicating whether the locator is visible.
+   */
   async goToDashboard(page: Page, locator: Locator): Promise<boolean> {
     if (!(await locator.isVisible())) {
         // Si no estás en una página con el botón de logout u otra opción del menú de perfil, navega al dashboard
@@ -106,6 +129,14 @@ export class BasePage {
     }
   }   
 
+  /**
+   * Navigates to the "About" section by performing the following steps:
+   * 1. Opens the profile menu.
+   * 2. Clicks the "About" button.
+   * 3. Verifies that the popup is visible.
+   *
+   * @returns {Promise<void>} A promise that resolves when the navigation is complete.
+   */
   async about(): Promise<void> {
     const aboutButton = this.aboutButton;
     await this.openProfileMenu();
@@ -113,6 +144,14 @@ export class BasePage {
     await expect(this.popup).toBeVisible();
   }
 
+  /**
+   * Checks the information displayed in the "About" popup.
+   *
+   * This method verifies that the "About" popup contains the expected title and that
+   * the company name, version, active employees, and terminated employees elements are visible.
+   *
+   * @returns {Promise<boolean>} A promise that resolves to `true` if all checks pass, or `false` if any check fails.
+   */
   async checkAboutPopupInformation(): Promise<boolean> {
     const popupTitle = this.popupTitle;
     const popupCompanyName = this.popupCompanyName;
@@ -133,6 +172,14 @@ export class BasePage {
     }
   }
 
+  /**
+   * Closes the popup if it is visible.
+   * 
+   * This method first checks if the popup is visible, then clicks the close button,
+   * and finally verifies that the popup is no longer visible.
+   * 
+   * @returns {Promise<void>} A promise that resolves when the popup is closed.
+   */
   async closePopup(): Promise<void> {
     let popup = this.popup;
     let closePopupButton = this.closePopupButton;
@@ -141,6 +188,12 @@ export class BasePage {
     await expect(popup).not.toBeVisible(); 
   }
 
+  /**
+   * Checks if the change password button is visible on the page.
+   *
+   * @param {Page} page - The Playwright Page object representing the browser page.
+   * @returns {Promise<boolean>} A promise that resolves to true if the change password button is visible, otherwise false.
+   */
   async isChangePasswordVisible(page: Page): Promise<boolean> {
     try {
       await expect(this.changePasswordButton).toBeVisible();
@@ -150,6 +203,13 @@ export class BasePage {
     }
   }
 
+  /**
+   * Navigates to the change password section by performing the following steps:
+   * 1. Opens the profile menu.
+   * 2. Clicks on the change password button.
+   *
+   * @returns {Promise<void>} A promise that resolves when the navigation is complete.
+   */
   async accessChangePassword(): Promise<void> {
     const changePasswordButton = this.changePasswordButton;
     await this.openProfileMenu();
@@ -177,6 +237,14 @@ export class BasePage {
     }
   }
 
+  /**
+   * Waits for the page to fully load.
+   * 
+   * This method waits for the page's load state to be 'load', indicating that the DOM content is fully loaded.
+   * It has a timeout of 60 seconds.
+   * 
+   * @returns {Promise<void>} A promise that resolves when the page load is complete.
+   */
   async waitForPageLoad() {
     await this.page.waitForLoadState('load', { timeout: 60000 }); // Espera a que el DOM esté cargado
   }
