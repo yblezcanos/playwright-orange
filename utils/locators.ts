@@ -1,6 +1,5 @@
 import { Locator, Page } from "@playwright/test";
 
-// Definir los tipos de localizadores admitidos
 export type LocatorType =
   | string  // XPath o CSS
   | { css: string; nth?: number }  // getByText
