@@ -12,7 +12,7 @@ export const changePasswordLocators = {
     changePasswordCancelButton: ['button', { name: 'Cancel' }],
     spinner: '.oxd-loading-spinner',
 
-    errorMessage: '.oxd-toast.oxd-toast--error',
+    errorMessage: '.oxd-toast-content--error .oxd-text--toast-message',
     alertMessage: '.oxd-input-field-error-message',
     newPasswordLabelPolicy: '.orangehrm-password-chip',
 };
