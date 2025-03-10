@@ -1,0 +1,9 @@
+{
+    "invalidPasswords": [
+      { "pass": "123", "message": "Should have at least 7 characters" },
+      { "pass": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", "message": "Should not exceed 64 characters" },
+      { "pass": "abcdefg", "message": "Your password must contain minimum 1 number" },
+      { "pass": "1234567", "message": "Your password must contain minimum 1 lower-case letter" }
+    ]
+  }
+  

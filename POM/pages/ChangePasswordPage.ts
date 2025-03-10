@@ -3,6 +3,7 @@ import { BasePage } from './BasePage';
 import { LocatorType, getByLocator } from "../../utils/locators";
 import { changePasswordLocators } from "../locators/changePassword";
 import passCfg from "../../tests/common/pass.cfg.json"; 
+import passCfg2 from "../../tests/common/pass.cfg2.json"; 
 
 export class ChangePasswordPage extends BasePage {
   readonly containerChangePassword: Locator;
@@ -147,14 +148,7 @@ export class ChangePasswordPage extends BasePage {
       alertMessage = getByLocator(this.page, alertMessage as LocatorType);
     }
 
-    const invalidPasswords = [
-      { pass: '123', message: 'Should have at least 7 characters' },
-      { pass: 'abc', message: 'Should have at least 7 characters' },
-
-      { pass: 'A'.repeat(65), message: 'Should not exceed 64 characters' },
-      { pass: 'abcdefg', message: 'Your password must contain minimum 1 number' },
-      { pass: '1234567', message: 'Your password must contain minimum 1 lower-case letter' }
-    ];
+    const invalidPasswords = passCfg2.invalidPasswords;
 
     for (const { pass, message } of invalidPasswords) {
       await this.enterNewPassword(pass, input);

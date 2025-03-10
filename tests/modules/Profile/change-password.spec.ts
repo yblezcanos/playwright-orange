@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import { BasePage } from '../../../POM/pages/BasePage';
 import { LoginPage } from '../../../POM/pages/LoginPage';
 import { ChangePasswordPage } from '../../../POM/pages/ChangePasswordPage';
+import passCfg2 from '../../common/pass.cfg2.json';
 
 
 test.use({ storageState: 'tmp/.auth/user.json' });
@@ -58,16 +59,8 @@ test.describe('Change Password', () => {
         let isContainerChangePasswordTitleVisible = await changePasswordPage.isContainerChangePasswordTitleVisible();
         expect(isContainerChangePasswordTitleVisible).toBeTruthy();
         let isTitleChangePasswordOK = await changePasswordPage.isTitleChangePasswordOK();
-        expect(await isTitleChangePasswordOK).toBeTruthy();
-
-
-        const invalidPasswords = [
-            { pass: '123', message: 'Should have at least 7 characters' }, // Less than 7 characters
-            { pass: 'A'.repeat(65), message: 'Should not exceed 64 characters' }, // More than 64 characters
-            { pass: 'abcdefg', message: 'Your password must contain minimum 1 number' }, // No numbers
-            { pass: '1234567', message: 'Your password must contain minimum 1 lower-case letter' } // No lowercase letters
-        ];
-
+        expect(await isTitleChangePasswordOK).toBeTruthy();             
+        const invalidPasswords = passCfg2.invalidPasswords;
         for (const { pass, message } of invalidPasswords) {
             await changePasswordPage.enterNewPassword(pass);
             await expect(changePasswordPage.alertMessage).toHaveText(message);
