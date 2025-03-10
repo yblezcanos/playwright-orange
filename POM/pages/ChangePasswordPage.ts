@@ -85,19 +85,17 @@ export class ChangePasswordPage extends BasePage {
  * @returns A promise that resolves to `true` if the error message is visible and contains the expected text, otherwise `false`.
  */
   async expectErrorMessage(errorText: string): Promise<boolean> {
-    const errorMessage = this.errorMessage;
-    // Esperamos que el mensaje de error sea visible
+    const errorMessage = this.errorMessage;    
     await errorMessage.waitFor({ state: 'visible', timeout: 3000 });
   
     const errorMessageTextLocator = errorMessage.locator('text=' + errorText);
-    try {
-      // Verificamos que el texto del error esté presente
-      const errorMessageText = await errorMessage.textContent(); // Puedes usar `textContent()` en lugar de `innerText()`
-      await expect(errorMessageText).toContain(errorText); // Esto será más tolerante con el texto.
+    try {      
+      const errorMessageText = await errorMessage.textContent();
+      await expect(errorMessageText).toContain(errorText);
       await expect(errorMessageTextLocator).toBeVisible({ timeout: 3000 });
-      return true; // Si todo está bien, retorna true
+      return true;
     } catch (error) {
-      return false; // Si falla, retorna false
+      return false;
     }
   }
   
@@ -150,17 +148,17 @@ export class ChangePasswordPage extends BasePage {
     }
 
     const invalidPasswords = [
-      { pass: '123', message: 'Should have at least 7 characters' }, // Less than 7 characters
-      { pass: 'abc', message: 'Should have at least 7 characters' }, // Less than 7 characters
+      { pass: '123', message: 'Should have at least 7 characters' },
+      { pass: 'abc', message: 'Should have at least 7 characters' },
 
-      { pass: 'A'.repeat(65), message: 'Should not exceed 64 characters' }, // More than 64 characters
-      { pass: 'abcdefg', message: 'Your password must contain minimum 1 number' }, // No numbers
-      { pass: '1234567', message: 'Your password must contain minimum 1 lower-case letter' } // No lowercase letters
+      { pass: 'A'.repeat(65), message: 'Should not exceed 64 characters' },
+      { pass: 'abcdefg', message: 'Your password must contain minimum 1 number' },
+      { pass: '1234567', message: 'Your password must contain minimum 1 lower-case letter' }
     ];
 
     for (const { pass, message } of invalidPasswords) {
       await this.enterNewPassword(pass, input);
-      await expect(alertMessage).toHaveText(message); // this.alertMessage
+      await expect(alertMessage).toHaveText(message);
     }
   }
 
@@ -183,14 +181,19 @@ export class ChangePasswordPage extends BasePage {
       alertMessage = getByLocator(this.page, alertMessage as LocatorType);
     }
 
-    let results = await Promise.all([
-      this.validateMinLen(input, alertMessage),
-      this.validateMaxLen(input, alertMessage),
-      this.validateNumber(input, alertMessage),
-      this.validateLowerCase(input, alertMessage)
-    ]);
+    const minLenValid = await this.validateMinLen(input, alertMessage);
+    if (!minLenValid) return false;
 
-    return results.every(result => result);   
+    const maxLenValid = await this.validateMaxLen(input, alertMessage);
+    if (!maxLenValid) return false;
+
+    const numberValid = await this.validateNumber(input, alertMessage);
+    if (!numberValid) return false;
+
+    const lowerCaseValid = await this.validateLowerCase(input, alertMessage);
+    if (!lowerCaseValid) return false;
+
+    return true;
   }
 
   /**
@@ -206,13 +209,12 @@ export class ChangePasswordPage extends BasePage {
 
     for (let pass of passwords) {
       await this.enterNewPassword(pass, cmp);
-      const text = await cmp.textContent()
       const altMessage = await alertMessage.textContent();
-      if (altMessage !== message || text !== pass) {
+      await expect(alertMessage).toHaveText(message, { timeout: 3000 });
+      if (altMessage !== message) {        
         return false;
       }
-    }
-
+    }    
     return true;
   }
 
@@ -227,7 +229,7 @@ export class ChangePasswordPage extends BasePage {
     let pass = passCfg.maxLen.chart.repeat(65);
     await this.enterNewPassword(pass, cmp);
     const text = await cmp.textContent() ?? "";
-    const message = await alertMessage.textContent() ?? "";
+    const message = await alertMessage.textContent() ?? "";   
     return text !== null &&
       text.length <= passCfg.maxLen.max &&
       message === passCfg.maxLen.msg;
@@ -253,8 +255,7 @@ export class ChangePasswordPage extends BasePage {
       if (text == null && altMessage !== message &&  !/\d/.test(text)) {
         return false;
       }
-    }
-
+    }    
     return true;
   }    
 
@@ -275,8 +276,7 @@ export class ChangePasswordPage extends BasePage {
       if (text == null && altMessage !== message &&  !/[a-z]/.test(text)) {
         return false;
       }
-    }
-
+    }    
     return true;
   }    
    
