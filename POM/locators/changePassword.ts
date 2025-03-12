@@ -71,14 +71,33 @@ export const changePasswordLocators = {
     errorMessage: '.oxd-toast-content--error .oxd-text--toast-message',
 
     /**
-     * Locator for the alert message displayed below input fields.
+     * Locator for the successfully Saved message toast.
      * @type {string}
      */
-    alertMessage: '.oxd-input-field-error-message',
+    successfullySaved: '.oxd-toast-content-text.oxd-text--toast-message',
+
+    /**
+     * Locator for the alert message displayed below New Password field.
+     * @type {string}
+     */
+    //alertMessage: '.oxd-input-field-error-message',
+    alertMessageNewPassword:'.oxd-input-group:has(label:has-text("Password")) .oxd-input-field-error-message',
 
     /**
      * Locator for the new password policy label.
      * @type {string}
      */
     newPasswordLabelPolicy: '.orangehrm-password-chip',
+
+    /**
+     * Locator for the confirm password alert error.
+     * @type {string}
+     */
+    confirmPasswordAlertErrorMessage: 'Passwords do not match',
+
+    /**
+     * Locator for the alert message displayed below Confirm Password field.
+     * @type {string}
+     */
+    alertMessageConfirmPassword: '.oxd-input-group:has(label:has-text("Confirm Password")) .oxd-input-field-error-message',
 };

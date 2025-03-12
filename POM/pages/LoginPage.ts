@@ -157,7 +157,6 @@ export class LoginPage extends BasePage {
         await expect(page).toHaveURL('/web/index.php/dashboard/index');
         let isTextVisible = await this.isNavbarTextVisible('Dashboard');//Dashboard
         expect(isTextVisible).toBeTruthy();
-        //almacenar el estado de la sesion(es como una cookie)
         await page.context().storageState({ path: authFile });
     }
 }

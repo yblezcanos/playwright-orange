@@ -116,4 +116,9 @@ export const basePageLocators = {
      * Locator for the loading spinner.
      */
     spinner: '.oxd-loading-spinner',
+
+    /**
+     * Locator for the Profile Menu.
+     */
+    profileMenu: '.oxd-dropdown-menu'
 };

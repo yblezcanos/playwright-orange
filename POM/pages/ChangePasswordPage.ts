@@ -2,8 +2,8 @@ import { expect, Page, Locator } from '@playwright/test';
 import { BasePage } from './BasePage';
 import { LocatorType, getByLocator } from "../../utils/locators";
 import { changePasswordLocators } from "../locators/changePassword";
-import passCfg from "../../tests/common/pass.cfg.json"; 
-import passCfg2 from "../../tests/common/pass.cfg2.json"; 
+import passCfg from "../../tests/common/pass.cfg.json";
+import passCfg2 from "../../tests/common/pass.cfg2.json";
 
 export class ChangePasswordPage extends BasePage {
   readonly containerChangePassword: Locator;
@@ -15,7 +15,9 @@ export class ChangePasswordPage extends BasePage {
   readonly spinner: Locator;
   readonly errorMessage: Locator;
   readonly newPasswordLabelPolicy: Locator;
-  readonly alertMessage: Locator;
+  readonly alertMessageNewPassword: Locator;  
+  readonly alertMessageConfirmPassword: Locator;
+  readonly successfullySaved: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -28,7 +30,9 @@ export class ChangePasswordPage extends BasePage {
     this.spinner = getByLocator(page, changePasswordLocators.spinner);
     this.errorMessage = getByLocator(page, changePasswordLocators.errorMessage);
     this.newPasswordLabelPolicy = getByLocator(page, changePasswordLocators.newPasswordLabelPolicy);
-    this.alertMessage = getByLocator(page, changePasswordLocators.alertMessage);
+    this.alertMessageNewPassword = getByLocator(page, changePasswordLocators.alertMessageNewPassword);    
+    this.alertMessageConfirmPassword = getByLocator(page, changePasswordLocators.alertMessageConfirmPassword);
+    this.successfullySaved = getByLocator(page, changePasswordLocators.successfullySaved);
   }
 
   /**
@@ -39,23 +43,13 @@ export class ChangePasswordPage extends BasePage {
    *              If a locator type is provided, it will be converted to a locator.
    * @returns A promise that resolves when the password has been entered.
    */
-  async enterNewPassword(newPassword: string, cmp?: Locator | LocatorType) {
+  async typePassword(newPassword: string, cmp?: Locator | LocatorType) {
     if (!cmp) {
       cmp = this.newPassword;
     } else if (!this.isLocator(cmp)) {
       cmp = getByLocator(this.page, cmp as LocatorType);
     }
     await cmp.fill(newPassword);
-  }  
-
-  /**
-   * Fills the confirm password field with the provided password.
-   *
-   * @param confirmPassword - The password to confirm.
-   * @returns A promise that resolves when the password has been filled.
-   */
-  async confirmNewPassword(confirmPassword: string) {
-    await this.confirmPassword.fill(confirmPassword);
   }
 
   /**
@@ -77,29 +71,35 @@ export class ChangePasswordPage extends BasePage {
     await confirmPasswordInput.last().fill(newPassword);
     await saveButton.click();
     await spinner.waitFor({ state: 'hidden' });
-  }
 
+  }
+ 
   /**
- * Verifies if the error message is displayed and contains the expected text.
- *
- * @param errorText - The expected text of the error message.
- * @returns A promise that resolves to `true` if the error message is visible and contains the expected text, otherwise `false`.
- */
-  async expectErrorMessage(errorText: string): Promise<boolean> {
-    const errorMessage = this.errorMessage;    
-    await errorMessage.waitFor({ state: 'visible', timeout: 3000 });
+   * Asserts that a message is visible and contains the expected text.
+   *
+   * @param {Locator} messageLocator - The locator for the message element.
+   * @param {string} expectedText - The expected text to be contained in the message.
+   * @returns {Promise<boolean>} - A promise that resolves to true if the message is visible and contains the expected text, otherwise false.
+   * @throws {Error} - Throws an error if the message is not visible or does not contain the expected text within the specified timeout.
+   */
+  async expectMessage(messageLocator: Locator, expectedText: string): Promise<boolean> {
+    try {
+      // Esperar a que el mensaje esté presente y visible
+      await messageLocator.waitFor({ state: 'visible', timeout: 3000 });
   
-    const errorMessageTextLocator = errorMessage.locator('text=' + errorText);
-    try {      
-      const errorMessageText = await errorMessage.textContent();
-      await expect(errorMessageText).toContain(errorText);
-      await expect(errorMessageTextLocator).toBeVisible({ timeout: 3000 });
+      // Obtener el texto del mensaje
+      const messageText = await messageLocator.textContent() ?? "";
+  
+      // Verificar que el texto contenga el mensaje esperado
+      await expect(messageText).toContain(expectedText);
+      await expect(messageLocator.locator(`text=${expectedText}`)).toBeVisible({ timeout: 3000 });
+  
       return true;
     } catch (error) {
       return false;
     }
   }
-  
+
   /**
    * Checks if the container for the change password title is visible on the page.
    *
@@ -143,7 +143,7 @@ export class ChangePasswordPage extends BasePage {
     }
 
     if (!alertMessage) {
-      alertMessage = this.alertMessage;
+      alertMessage = this.alertMessageNewPassword;
     } if (!this.isLocator(alertMessage)) {
       alertMessage = getByLocator(this.page, alertMessage as LocatorType);
     }
@@ -151,7 +151,7 @@ export class ChangePasswordPage extends BasePage {
     const invalidPasswords = passCfg2.invalidPasswords;
 
     for (const { pass, message } of invalidPasswords) {
-      await this.enterNewPassword(pass, input);
+      await this.typePassword(pass, input);
       await expect(alertMessage).toHaveText(message);
     }
   }
@@ -170,7 +170,7 @@ export class ChangePasswordPage extends BasePage {
     }
 
     if (!alertMessage) {
-      alertMessage = this.alertMessage;
+      alertMessage = this.alertMessageNewPassword;
     } if (!this.isLocator(alertMessage)) {
       alertMessage = getByLocator(this.page, alertMessage as LocatorType);
     }
@@ -187,6 +187,9 @@ export class ChangePasswordPage extends BasePage {
     const lowerCaseValid = await this.validateLowerCase(input, alertMessage);
     if (!lowerCaseValid) return false;
 
+    const emptyValid = await this.validateEmpty(input, alertMessage);
+    if (!emptyValid) return false;
+
     return true;
   }
 
@@ -202,13 +205,13 @@ export class ChangePasswordPage extends BasePage {
     let passwords = passCfg.minLen.chart;
 
     for (let pass of passwords) {
-      await this.enterNewPassword(pass, cmp);
+      await this.typePassword(pass, cmp);
       const altMessage = await alertMessage.textContent();
       await expect(alertMessage).toHaveText(message, { timeout: 3000 });
-      if (altMessage !== message) {        
+      if (altMessage !== message) {
         return false;
       }
-    }    
+    }
     return true;
   }
 
@@ -221,9 +224,9 @@ export class ChangePasswordPage extends BasePage {
    */
   async validateMaxLen(cmp: Locator, alertMessage: Locator): Promise<boolean> {
     let pass = passCfg.maxLen.chart.repeat(65);
-    await this.enterNewPassword(pass, cmp);
+    await this.typePassword(pass, cmp);
     const text = await cmp.textContent() ?? "";
-    const message = await alertMessage.textContent() ?? "";   
+    const message = await alertMessage.textContent() ?? "";
     return text !== null &&
       text.length <= passCfg.maxLen.max &&
       message === passCfg.maxLen.msg;
@@ -243,15 +246,15 @@ export class ChangePasswordPage extends BasePage {
     let message = passCfg.number.msg;
     let passwords = passCfg.number.chart;
     for (let pass of passwords) {
-      await this.enterNewPassword(pass, cmp);
+      await this.typePassword(pass, cmp);
       const text = await cmp.textContent() ?? "";
       const altMessage = await alertMessage.textContent() ?? "";
-      if (text == null && altMessage !== message &&  !/\d/.test(text)) {
+      if (text == null && altMessage !== message && !/\d/.test(text)) {
         return false;
       }
-    }    
+    }
     return true;
-  }    
+  }
 
   /**
    * Validates that the provided component displays an alert message when a password without lowercase letters is entered.
@@ -264,16 +267,25 @@ export class ChangePasswordPage extends BasePage {
     let message = passCfg.lowerCase.msg;
     let passwords = passCfg.lowerCase.chart;
     for (let pass of passwords) {
-      await this.enterNewPassword(pass, cmp);
+      await this.typePassword(pass, cmp);
       const text = await cmp.textContent() ?? "";
       const altMessage = await alertMessage.textContent() ?? "";
-      if (text == null && altMessage !== message &&  !/[a-z]/.test(text)) {
+      if (text == null && altMessage !== message && !/[a-z]/.test(text)) {
         return false;
       }
-    }    
+    }
     return true;
-  }    
-   
+  }
+
+  async validateEmpty(cmp: Locator, alertMessage: Locator): Promise<boolean> {
+    let pass = passCfg.empty.chart;
+    await this.typePassword(pass, cmp);
+    const text = await cmp.textContent() ?? "";
+    const message = await alertMessage.textContent() ?? "";
+    return text !== null &&
+      message === passCfg.empty.msg;
+  }
+
   /**
    * Checks if the given object is a Locator.
    *
@@ -283,4 +295,36 @@ export class ChangePasswordPage extends BasePage {
   isLocator(obj: any): obj is Locator {
     return obj && typeof obj === 'object' && typeof obj.click === 'function' && typeof obj.isVisible === 'function';
   }
+
+  /**
+   * Verifies that the alert message is displayed when the confirm password does not match the new password.
+   *
+   * @param newPassword - The new password to be entered.
+   * @param confirmPassword - The confirm password to be entered.
+   * @param alertMessage - The expected alert message when passwords do not match.
+   * @returns A promise that resolves to `true` if the alert message is displayed and contains the expected text, otherwise `false`.
+   */
+  async verifyConfirmPasswordMismatch(newPass: Locator, confirmPass: Locator, alertMessageConfirmPassword: Locator): Promise<boolean> {
+    await this.typePassword(passCfg.confirmPass.newPass, newPass);
+    let PasswordsMismatch = passCfg.confirmPass.confirmationPass;
+    try {
+      for (let pass of PasswordsMismatch) {
+        await this.typePassword(pass, confirmPass);
+        const alertText = await alertMessageConfirmPassword.textContent() ?? "";
+        await expect(alertText).toContain(passCfg.confirmPass.msg);
+        await expect(alertMessageConfirmPassword).toBeVisible({ timeout: 3000 });
+      }
+      return true;
+    }
+    catch (error) {
+      return false;
+    }
+
+  }
 }
+
+
+
+
+
+

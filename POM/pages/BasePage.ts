@@ -25,7 +25,8 @@ export class BasePage {
   readonly closePopupButton: Locator;
   readonly changePasswordButton: Locator;
   readonly changePasswordUrl: string;
-  
+  readonly profileMenu: Locator;
+
   constructor(page: Page) {
     this.page = page;
     this.navbar = getByLocator(page, basePageLocators.navbar);
@@ -40,7 +41,8 @@ export class BasePage {
     this.popupActiveEmployees = getByLocator(page, basePageLocators.popupActiveEmployees);
     this.popupEmployeesTerminated = getByLocator(page, basePageLocators.popupEmployeesTerminated)
     this.closePopupButton = getByLocator(page, basePageLocators.closePopupButton);
-    this.changePasswordButton = getByLocator(page, basePageLocators.changePasswordButton as LocatorType);    
+    this.changePasswordButton = getByLocator(page, basePageLocators.changePasswordButton as LocatorType);
+    this.profileMenu = getByLocator(page, basePageLocators.profileMenu);
   }
 
   /**
@@ -70,7 +72,7 @@ export class BasePage {
   async isNavbarTextVisible(text: string): Promise<boolean> {
     try {
       const navbarPath = this.navbar.locator(`text="${text}"`);
-      await expect(navbarPath).toBeVisible({ timeout: 5000 });
+      await navbarPath.waitFor({ state: 'attached', timeout: 5000 });
       return true;
     } catch (error) {
       return false;
@@ -95,14 +97,14 @@ export class BasePage {
    */
   async goToDashboard(page: Page, locator: Locator): Promise<boolean> {
     if (!(await locator.isVisible())) {
-        // Si no estás en una página con el botón de logout u otra opción del menú de perfil, navega al dashboard
-        await page.goto('/web/index.php/dashboard/index');
+      // Si no estás en una página con el botón de logout u otra opción del menú de perfil, navega al dashboard
+      await page.goto('/web/index.php/dashboard/index');
 
-        // Espera a que el locator esté visible con un timeout
-        await locator.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
+      // Espera a que el locator esté visible con un timeout
+      await locator.waitFor({ state: 'visible', timeout: 5000 }).catch(() => { });
     }
     return await locator.isVisible();
-}
+  }
 
   /**
    * Logs out the user by clicking the logout button in the navbar
@@ -127,7 +129,7 @@ export class BasePage {
     } catch (error) {
       return false;
     }
-  }   
+  }
 
   /**
    * Navigates to the "About" section by performing the following steps:
@@ -185,7 +187,7 @@ export class BasePage {
     let closePopupButton = this.closePopupButton;
     await expect(popup).toBeVisible();
     await closePopupButton.click();
-    await expect(popup).not.toBeVisible(); 
+    await expect(popup).not.toBeVisible();
   }
 
   /**
@@ -213,9 +215,30 @@ export class BasePage {
   async accessChangePassword(): Promise<void> {
     const changePasswordButton = this.changePasswordButton;
     await this.openProfileMenu();
-    await changePasswordButton.click();    
+    await changePasswordButton.click();
   }
+
+  /**
+   * Verifies the visibility of the profile menu on the page.
+   * Ensures that the profile menu is visible and contains the expected text.
+   *
+   * @param {Page} page - The Playwright Page object representing the browser page.
+   * @returns {Promise<void>} A promise that resolves when the verification is complete.
+   */
+  async verifyMenuVisibility(page: Page): Promise<void> {
+    // Asegúrate de que el menú de perfil esté visible en cada resolución
+    await this.openProfileMenu();
+    const menu = this.profileMenu;
+    await expect(menu).toBeVisible();
   
+    // Verifica si el menú se ve correctamente (puedes agregar más comprobaciones visuales)
+    const menuText = await menu.textContent();
+    expect(menuText).toContain('About');   
+    expect(menuText).toContain('Support');
+    expect(menuText).toContain('Change Password'); 
+    expect(menuText).toContain('Logout');     
+  }
+
   /**
    * It Allows to wait For Page Change URL
    * @param {PageChangeOption} options 
@@ -247,5 +270,5 @@ export class BasePage {
    */
   async waitForPageLoad() {
     await this.page.waitForLoadState('load', { timeout: 60000 }); // Espera a que el DOM esté cargado
-  }
+  }  
 }
