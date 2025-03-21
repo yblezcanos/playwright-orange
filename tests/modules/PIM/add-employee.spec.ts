@@ -17,7 +17,8 @@ test.describe('Add Employee', () => {
     });
 
     test('should successfully add a new employee with valid data', async ({ page }) => {      
-        await employeePage.addEmployeeFaker(employeePage.firstName, employeePage.lastName, employeePage.middleName, employeePage.employeeId);       
+        const isEmployeeAdd = await employeePage.addEmployeeFaker(employeePage.firstName, employeePage.lastName, employeePage.middleName, employeePage.employeeId);      
+        expect(isEmployeeAdd).toBeTruthy(); 
         await expect(page).toHaveURL(/\/web\/index.php\/pim\/viewPersonalDetails\/empNumber\/\d+$/);
     });
 });

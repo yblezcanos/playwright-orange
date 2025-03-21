@@ -83,7 +83,62 @@ export class EmployeePage extends BasePage {
     }
 
   }
+  /**
+   * Adds a new employee by filling out the required fields and clicking the save button.
+   * Returns true if the operation is successful, otherwise false.
+   *
+   * @param {Locator} firstNameCmp - The locator for the first name input field.
+   * @param {Locator} lastNameCmp - The locator for the last name input field.
+   * @param {Locator} [middleNameCmp] - The locator for the middle name input field (optional).
+   * @param {Locator} [employeeIdCmp] - The locator for the employee ID input field (optional).
+   * @returns {Promise<boolean>} A promise that resolves to true if the employee is added successfully, otherwise false.
+   */
+  async addEmployeeFaker(firstNameCmp: Locator, lastNameCmp: Locator, middleNameCmp?: Locator, employeeIdCmp?: Locator): Promise<boolean> {
+    try {
+      const sidebarPIM = this.sidebarPIM;
+      const topBarMenu = this.topBarMenuAddEmployee;
+      const addEmployeeTitle = this.addEmployeeTitle;
+      const firstNameInput = firstNameCmp;
+      const middleNameInput = middleNameCmp;
+      const lastNameInput = lastNameCmp;
+      const employeeIdInput = employeeIdCmp;
+      const saveButton = this.saveButton;
 
+      await sidebarPIM.click();
+      await topBarMenu.click();
+      await addEmployeeTitle.waitFor({ state: 'visible', timeout: 6000 });
+      await expect(addEmployeeTitle).toHaveText('Add Employee');
+
+      const randomFirstName = faker.generateName();
+      const randomLastName = faker.generateLastName();
+      const randomMiddleName = faker.generateMiddleName();
+      const randomEmployeeId = faker.generateEmployeeId();
+
+      await firstNameInput.fill(randomFirstName);
+      await lastNameInput.fill(randomLastName);
+
+      if (middleNameInput) {
+        await middleNameInput.fill(randomMiddleName);
+      }
+
+      if (employeeIdInput) {
+        await employeeIdInput.fill(randomEmployeeId);
+      }
+
+      await saveButton.click();
+
+      const successMessage = await this.expectMessage(this.successMessage, 'Successfully Saved');
+      if (!successMessage) {
+        return false;
+      }
+
+      const isTitleEmployeeListVisible = await this.isTitleEmployeeInfoOK();
+      return isTitleEmployeeListVisible;
+    } catch (error) {
+      console.error('Error in addEmployeeFaker:', error);
+      return false;
+    }
+  }
   /**
   * Adds a new employee by filling out the required fields and clicking the save button.
   *
@@ -93,7 +148,7 @@ export class EmployeePage extends BasePage {
   * @param {string} [employeeId] - The employee ID (optional).
   * @returns {Promise<void>} A promise that resolves when the employee has been added.
   */
-  async addEmployeeFaker(firstNameCmp: Locator, lastNameCmp: Locator, middleNameCmp?: Locator, employeeIdCmp?: Locator): Promise<void> {
+  async addEmployeeFaker1(firstNameCmp: Locator, lastNameCmp: Locator, middleNameCmp?: Locator, employeeIdCmp?: Locator): Promise<void> {
     const sidebarPIM = this.sidebarPIM;
     const topBarMenu = this.topBarMenuAddEmployee;
     const addEmployeeTitle = this.addEmployeeTitle;
