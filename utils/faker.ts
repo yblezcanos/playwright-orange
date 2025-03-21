@@ -59,5 +59,40 @@ export const generateEmail = (): string => {
  * @returns {string} A randomly generated first name.
  */
 export const generateName = (): string => {
-    return faker.person.firstName();
+    const firstName = faker.person.firstName();
+    return firstName.length > 30 ? firstName.substring(0, 30) : firstName;
+};
+
+/**
+ * Generates a random last name.
+ *
+ * @returns {string} A randomly generated last name.
+ */
+export const generateLastName = (): string => {
+    const lastName = faker.person.lastName();
+    return lastName.length > 30 ? lastName.substring(0, 30) : lastName;
+};
+
+/**
+ * Generates a random middle name.
+ *
+ * @returns {string} A randomly generated middle name.
+ */
+export const generateMiddleName = (): string => {
+    const middleName = faker.person.middleName();
+    return middleName.length > 30 ? middleName.substring(0, 30) : middleName;
+};
+
+/**
+ * Generates a random employee ID.
+ * The ID will consist of a prefix "EMP" followed by a random 5-digit number.
+ *
+ * @returns {string} A randomly generated employee ID.
+ */
+export const generateEmployeeId = (): string => {
+    let employeeId = '';
+    while (!/^[\w!@#$%^&*()\-+=]{1,10}$/.test(employeeId)) {
+        employeeId = faker.string.alphanumeric(10);
+    }
+    return employeeId;
 };

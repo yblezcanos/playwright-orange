@@ -16,12 +16,8 @@ test.describe('Add Employee', () => {
         await basePage.goToDashboard(page, basePage.changePasswordButton);  
     });
 
-    test('should add a new employee', async ({ page }) => {      
-        await employeePage.addEmployee('John', 'Doe', 'Borges',);
-        //const expectedMessage = await employeePage.expectMessage(employeePage.successMessage, 'Successfully Saved')
-        //await expect(expectedMessage).toBeTruthy();
-        //const isTitleEmployeeListVisible = await employeePage.isTitleEmployeeInfoOK();
-        //await expect(isTitleEmployeeListVisible).toBeTruthy();        
+    test('should successfully add a new employee with valid data', async ({ page }) => {      
+        await employeePage.addEmployeeFaker(employeePage.firstName, employeePage.lastName, employeePage.middleName, employeePage.employeeId);       
         await expect(page).toHaveURL(/\/web\/index.php\/pim\/viewPersonalDetails\/empNumber\/\d+$/);
     });
 });

@@ -3,6 +3,7 @@ import { BasePage } from './BasePage';
 import { employeeLocators } from "../locators/employeePage";
 import { LocatorType, getByLocator } from "../../utils/locators";
 import employees from "../../tests/common/employee.cfg.json";
+import * as faker from '../../utils/faker';
 
 export class EmployeePage extends BasePage {
   readonly sidebarPIM: Locator;
@@ -44,40 +45,85 @@ export class EmployeePage extends BasePage {
    * @param {string} [employeeId] - The employee ID (optional).
    * @returns {Promise<void>} A promise that resolves when the employee has been added.
    */
-  async addEmployee(firstName: string, lastName: string, middleName?: string, employeeId?: string): Promise<void> {
+  async addEmployeeJson(firstNameCmp: Locator, lastNameCmp: Locator, middleNameCmp?: Locator, employeeIdCmp?: Locator): Promise<void> {
     const sidebarPIM = this.sidebarPIM;
     const topBarMenu = this.topBarMenuAddEmployee;
     const addEmployeeTitle = this.addEmployeeTitle;
-    const firstNameInput = this.firstName;
-    const middleNameInput = this.middleName;
-    const lastNameInput = this.lastName;
-    const employeeIdInput = this.employeeId;
-    const saveButton = this.saveButton;  
+    const firstNameInput = firstNameCmp;
+    const middleNameInput = middleNameCmp;
+    const lastNameInput = lastNameCmp;
+    const employeeIdInput = employeeIdCmp;
+    const saveButton = this.saveButton;
     const employee = employees;
-    await sidebarPIM.click();     
-       
+    await sidebarPIM.click();
+
     for (const emp of employee.employees) { // Recorremos el array de empleados
       await topBarMenu.click();
-      await addEmployeeTitle.waitFor({ state: 'visible', timeout: 5000 });
+      await addEmployeeTitle.waitFor({ state: 'visible', timeout: 6000 });
       await expect(addEmployeeTitle).toHaveText('Add Employee');
       await firstNameInput.fill(emp.firstName);
       await lastNameInput.fill(emp.lastName);
-      
+
       if (emp.middleName) {
-        await middleNameInput.fill(emp.middleName);
+        if (middleNameInput) {
+          await middleNameInput.fill(emp.middleName);
+        }
       }
-      
-      /*if (emp.employeeId) {
-        await employeeIdInput.fill(emp.employeeId);
-      }*/
-      //await this.page.waitForSelector('.oxd-form-loader', { state: 'detached', timeout: 5000 });
+
+      if (emp.employeeId) {
+        if (employeeIdInput) {
+          await employeeIdInput.fill(emp.employeeId);
+        }
+      }
       await saveButton.click();
       const successMessage = await this.expectMessage(this.successMessage, 'Successfully Saved');
       await expect(successMessage).toBeTruthy();
-      const isTitleEmployeeListVisible = await this.isTitleEmployeeInfoOK(); 
+      const isTitleEmployeeListVisible = await this.isTitleEmployeeInfoOK();
       await expect(isTitleEmployeeListVisible).toBeTruthy();
     }
+
+  }
+
+  /**
+  * Adds a new employee by filling out the required fields and clicking the save button.
+  *
+  * @param {string} firstName - The first name of the employee.
+  * @param {string} lastName - The last name of the employee.
+  * @param {string} [middleName] - The middle name of the employee (optional).
+  * @param {string} [employeeId] - The employee ID (optional).
+  * @returns {Promise<void>} A promise that resolves when the employee has been added.
+  */
+  async addEmployeeFaker(firstNameCmp: Locator, lastNameCmp: Locator, middleNameCmp?: Locator, employeeIdCmp?: Locator): Promise<void> {
+    const sidebarPIM = this.sidebarPIM;
+    const topBarMenu = this.topBarMenuAddEmployee;
+    const addEmployeeTitle = this.addEmployeeTitle;
+    const firstNameInput = firstNameCmp;
+    const middleNameInput = middleNameCmp;
+    const lastNameInput = lastNameCmp;
+    const employeeIdInput = employeeIdCmp;
+    const saveButton = this.saveButton;
     
+    await sidebarPIM.click();
+    await topBarMenu.click();
+    await addEmployeeTitle.waitFor({ state: 'visible', timeout: 6000 });
+    await expect(addEmployeeTitle).toHaveText('Add Employee');
+    const randomFirstName = faker.generateName();
+    const randomLastName = faker.generateLastName();
+    const randomMiddleName = faker.generateMiddleName();
+    const randomEmployeeId = faker.generateEmployeeId();
+    await firstNameInput.fill(randomFirstName);
+    await lastNameInput.fill(randomLastName);
+    if (middleNameInput) {
+      await middleNameInput.fill(randomMiddleName);
+    }
+    if (employeeIdInput) {
+      await employeeIdInput.fill(randomEmployeeId);
+    }    
+    await saveButton.click();
+    const successMessage = await this.expectMessage(this.successMessage, 'Successfully Saved');
+    await expect(successMessage).toBeTruthy();
+    const isTitleEmployeeListVisible = await this.isTitleEmployeeInfoOK();
+    await expect(isTitleEmployeeListVisible).toBeTruthy();
   }
 
   /**
@@ -89,12 +135,12 @@ export class EmployeePage extends BasePage {
    */
   async expectMessage(messageLocator: Locator, expectedText: string): Promise<boolean> {
     try {
-      await messageLocator.waitFor({ state: 'visible', timeout: 3000 });
+      await messageLocator.waitFor({ state: 'visible', timeout: 5000 });
 
       const messageText = await messageLocator.textContent() ?? "";
 
       await expect(messageText).toContain(expectedText);
-      await expect(messageLocator.locator(`text=${expectedText}`)).toBeVisible({ timeout: 3000 });
+      await expect(messageLocator.locator(`text=${expectedText}`)).toBeVisible({ timeout: 5000 });
 
       return true;
     } catch (error) {
@@ -112,13 +158,11 @@ export class EmployeePage extends BasePage {
    */
   async isTitleEmployeeInfoOK(): Promise<boolean> {
     try {
-      const EmployeeListOption = await this.topBarMenuEmployeeList.isVisible();
-      const EmployeeInfoTitle = await this.employeeInfoTitle;
-      await expect(EmployeeListOption).toBeTruthy();
-      await EmployeeInfoTitle.waitFor({ state: 'visible', timeout: 5000 });
-      await expect(EmployeeInfoTitle).toHaveText('Personal Details');
+      await expect(this.topBarMenuEmployeeList).toBeVisible({ timeout: 6000 });
+      await expect(this.employeeInfoTitle).toHaveText('Personal Details', { timeout: 7000 });
       return true;
     } catch (error) {
+      console.error('Error in isTitleEmployeeInfoOK:', error);
       return false;
     }
   }

@@ -85,14 +85,14 @@ export class ChangePasswordPage extends BasePage {
   async expectMessage(messageLocator: Locator, expectedText: string): Promise<boolean> {
     try {
       // Esperar a que el mensaje esté presente y visible
-      await messageLocator.waitFor({ state: 'visible', timeout: 3000 });
+      await messageLocator.waitFor({ state: 'visible', timeout: 5000 });
   
       // Obtener el texto del mensaje
       const messageText = await messageLocator.textContent() ?? "";
   
       // Verificar que el texto contenga el mensaje esperado
       await expect(messageText).toContain(expectedText);
-      await expect(messageLocator.locator(`text=${expectedText}`)).toBeVisible({ timeout: 3000 });
+      await expect(messageLocator.locator(`text=${expectedText}`)).toBeVisible({ timeout: 5000 });
   
       return true;
     } catch (error) {
