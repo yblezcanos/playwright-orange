@@ -4,6 +4,7 @@ import { employeeLocators } from "../locators/employeePage";
 import { LocatorType, getByLocator } from "../../utils/locators";
 import employees from "../../tests/common/employee.cfg.json";
 import * as faker from '../../utils/faker';
+import { th } from '@faker-js/faker';
 
 export class EmployeePage extends BasePage {
   readonly sidebarPIM: Locator;
@@ -18,7 +19,8 @@ export class EmployeePage extends BasePage {
   readonly employeeList: Locator;
   readonly employeeInfoTitle: Locator;
   readonly topBarMenuEmployeeList: Locator;
-
+  readonly firstNameError: Locator;
+  readonly lastNameError: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -34,6 +36,8 @@ export class EmployeePage extends BasePage {
     this.employeeList = getByLocator(page, employeeLocators.employeeList as LocatorType);
     this.employeeInfoTitle = getByLocator(page, employeeLocators.employeeInfoTitle as LocatorType);
     this.topBarMenuEmployeeList = getByLocator(page, employeeLocators.topBarMenuEmployeeList as LocatorType);
+    this.firstNameError = getByLocator(page, employeeLocators.firstNameError as LocatorType);
+    this.lastNameError = getByLocator(page, employeeLocators.lastNameError as LocatorType);
   }
 
   /**
@@ -139,48 +143,63 @@ export class EmployeePage extends BasePage {
       return false;
     }
   }
-  /**
-  * Adds a new employee by filling out the required fields and clicking the save button.
-  *
-  * @param {string} firstName - The first name of the employee.
-  * @param {string} lastName - The last name of the employee.
-  * @param {string} [middleName] - The middle name of the employee (optional).
-  * @param {string} [employeeId] - The employee ID (optional).
-  * @returns {Promise<void>} A promise that resolves when the employee has been added.
-  */
-  async addEmployeeFaker1(firstNameCmp: Locator, lastNameCmp: Locator, middleNameCmp?: Locator, employeeIdCmp?: Locator): Promise<void> {
-    const sidebarPIM = this.sidebarPIM;
-    const topBarMenu = this.topBarMenuAddEmployee;
-    const addEmployeeTitle = this.addEmployeeTitle;
-    const firstNameInput = firstNameCmp;
-    const middleNameInput = middleNameCmp;
-    const lastNameInput = lastNameCmp;
-    const employeeIdInput = employeeIdCmp;
-    const saveButton = this.saveButton;
-    
-    await sidebarPIM.click();
-    await topBarMenu.click();
-    await addEmployeeTitle.waitFor({ state: 'visible', timeout: 6000 });
-    await expect(addEmployeeTitle).toHaveText('Add Employee');
-    const randomFirstName = faker.generateName();
-    const randomLastName = faker.generateLastName();
-    const randomMiddleName = faker.generateMiddleName();
-    const randomEmployeeId = faker.generateEmployeeId();
-    await firstNameInput.fill(randomFirstName);
-    await lastNameInput.fill(randomLastName);
-    if (middleNameInput) {
-      await middleNameInput.fill(randomMiddleName);
-    }
-    if (employeeIdInput) {
-      await employeeIdInput.fill(randomEmployeeId);
-    }    
-    await saveButton.click();
-    const successMessage = await this.expectMessage(this.successMessage, 'Successfully Saved');
-    await expect(successMessage).toBeTruthy();
-    const isTitleEmployeeListVisible = await this.isTitleEmployeeInfoOK();
-    await expect(isTitleEmployeeListVisible).toBeTruthy();
-  }
 
+  /**
+   * Adds a new employee by filling out the required fields and clicking the save button.
+   * Returns true if the operation is successful, otherwise false.
+   *
+   * @param {Locator} firstNameCmp - The locator for the first name input field.
+   * @param {Locator} lastNameCmp - The locator for the last name input field.
+   * @param {Locator} [middleNameCmp] - The locator for the middle name input field (optional).
+   * @param {Locator} [employeeIdCmp] - The locator for the employee ID input field (optional).
+   * @returns {Promise<boolean>} A promise that resolves to true if the employee is added successfully, otherwise false.
+   */
+  async addEmployeeEmptyValues(firstNameCmp: Locator, lastNameCmp: Locator, middleNameCmp?: Locator, employeeIdCmp?: Locator): Promise<boolean> {
+    try {
+      const sidebarPIM = this.sidebarPIM;
+      const topBarMenu = this.topBarMenuAddEmployee;
+      const addEmployeeTitle = this.addEmployeeTitle;
+      const firstNameInput = firstNameCmp;
+      const middleNameInput = middleNameCmp;
+      const lastNameInput = lastNameCmp;
+      const employeeIdInput = employeeIdCmp;
+      const saveButton = this.saveButton;
+
+      await sidebarPIM.click();
+      await topBarMenu.click();
+      await addEmployeeTitle.waitFor({ state: 'visible', timeout: 6000 });
+      await expect(addEmployeeTitle).toHaveText('Add Employee');
+
+      const emptyValue = '';     
+
+      await firstNameInput.fill(emptyValue);
+      await lastNameInput.fill(emptyValue);
+
+      if (middleNameInput) {
+        await middleNameInput.fill(emptyValue);
+      }
+
+      if (employeeIdInput) {
+        await employeeIdInput.fill(emptyValue);
+      }
+
+      await saveButton.click();
+
+      const firstNameError = this.firstNameError;
+      const lastNameError = this.lastNameError;      
+
+      await expect(firstNameError).toBeVisible();
+      await expect(firstNameError).toHaveText('Required');
+      await expect(lastNameError).toBeVisible();
+      await expect(lastNameError).toHaveText('Required');
+      return true;
+     
+    } catch (error) {     
+      return false;
+    }
+  }
+  
+  
   /**
    * Asserts that a message is visible and contains the expected text.
    *

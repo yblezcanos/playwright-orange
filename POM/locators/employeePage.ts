@@ -111,4 +111,14 @@ export const employeeLocators = {
      * Locator for a single data cell in the Employee List table.
      */
     employeeListTableDataCell: ['tableDataCell', { name: 'Employee List' }],
+
+    /**
+     * Locator for the "firstNameError" input in the Employee add page.
+     */
+    firstNameError: 'div.oxd-input-group:has(div > input.orangehrm-firstname) > span.oxd-input-field-error-message',
+
+    /**
+     * Locator for the "lastNameError" input in the Employee add page.
+     */
+    lastNameError: 'div.oxd-input-group:has(div > input.orangehrm-lastname) > span.oxd-input-field-error-message',
 }
